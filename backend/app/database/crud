@@ -1,0 +1,10 @@
+from typing import Optional, Dict
+from sqlalchemy.orm import Session
+from app.model.usermodel import User
+
+def get_user_username(username: str, db:Session)->Optional[Dict]:
+    user = db.query(User).filter(User.name==username).first()
+
+    if user:
+        return user.to_dict()
+    return None
