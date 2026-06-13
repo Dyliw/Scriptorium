@@ -1,0 +1,26 @@
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP
+from sqlalchemy.sql import func
+from app.database.db import get_db
+
+class User(get_db):
+    __tablename__ = "users"
+
+    id_user = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(30), nullable=False)
+    email = Column(String(150), unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    profile_photo = Column(Text, nullable=True)
+    description = Column(String(500), nullable=True)
+    created_at= Column(TIMESTAMP, server_default=func.current_timestamp())
+
+    def to_dict(self):
+        """Convierte los objetos a diccionarios"""
+        return{
+            "id_user": self.id_user,
+            "name": self.name,
+            "email": self.email,
+            "password_hash": self.password_hash,
+            "profile_photo": self.profile_photo,
+            "description": self.description,
+            "created_at": self.created_at
+        }
