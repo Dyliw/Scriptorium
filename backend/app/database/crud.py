@@ -104,3 +104,54 @@ def verify_email(db:Session, token:str)-> Optional[User]:
         db.refresh(user)
         return user
     
+def create_password_reset(db:Session, user_id: int, expires_houts: int =1) -> Optional[str]:
+    #tokens para resetear la contraseña
+    user= get_user_id(db, user_id)
+    if not user:
+        return None
+    
+    db.query(PasswordReset).filter(
+        and__(
+            PasswordReset.id_user == user_id,
+            PasswordReset.used==False
+        )
+    ).update({"used": True})
+
+    token = secrets.token_urlsafe(32)
+
+    reset_token = PasswordReset(
+        id_user=user_id,
+        token=token,
+        expires_at= datetime.now() + timedelta(hours=expires_houts),
+        used=False
+    )
+    db.add(reset_token)
+    db.commit()
+    return token
+
+def verify_reset_token(db: Session, token: str)->Optional[User]:
+    reset = db.query(PasswordReset).filter(
+        and__(
+            PasswordReset.token == token,
+            PasswordReset.expires_at > datetime.now(),
+            PasswordReset.used == False
+        )
+    ).first()
+
+    if not reset:
+        return None
+    
+    return reset.user
+
+def reset_password(db:Session, user_id: int, new_password_hash: str)-> bool:
+    #Resetea la contraseña y marca el token como usado
+    user=get_user_id(db, user_id)
+    if not user:
+        return False
+    user.pasword_hash = new_password_hash
+
+    db.query(PasswordReset).filter(
+        PasswordReset.id_user == user_id
+    ).update({"used": True})
+    db.commit()
+    return True
