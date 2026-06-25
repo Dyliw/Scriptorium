@@ -147,4 +147,31 @@ class UserRepository:
             return "Experto"
         else:
             return "Intermedio-Avanzado"
-        
+
+    def update_avatar(self, user_id: int, avatar_url: str, public_id: str=None)->Optional[User]:
+        user = self.get_by_id
+        if user:
+            old_public_id = user.avatar_public_id if hasattr(user, 'avatar_public_id') else None
+
+            user.profile_photo=avatar_url
+            user.avatar_public_id = public_id
+
+            user.updated_at = datetime.now()
+
+            self.db.commit()
+            self.db.refresh(user)
+            return user, old_public_id
+        return None, None
+    
+    def remove_avatar(self, user_id: int)->Optional[User]:
+        user=self.get_by_id(user_id)
+        if user:
+            old_public_id = user.avatar_public_id if hasattr(user, 'avatar_public_id') else None
+            user.profile_photo=None
+            user.avatar_public_id =None
+            user.updated_at = datetime.now()
+            self.db.commit()
+            self.db.refresh(user)
+
+            return user, old_public_id
+        return None, None
