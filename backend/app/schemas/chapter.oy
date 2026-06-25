@@ -1,0 +1,41 @@
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from datetime import datetime
+
+class ChapterBase(BaseModel):
+    chapter_number: Optional[int] = Field(None, ge=1)
+    title_en: Optional[str] = Field(None, max_length=200)
+    title_es: Optional[str] = Field(None, max_length=200)
+    title_de: Optional[str] = Field(None, max_length=200)
+    content_en: Optional[str] = None
+    content_es: Optional[str] = None
+    content_de: Optional[str] = None
+
+class ChapterCreate(ChapterBase):
+    pass
+
+class ChapterUpdate(BaseModel):
+    chapter_number: Optional[int] = Field(None, ge=1)
+    title_en: Optional[str] = Field(None, max_length=200)
+    title_es: Optional[str] = Field(None, max_length=200)
+    title_de: Optional[str] = Field(None, max_length=200)
+    content_en: Optional[str] = None
+    content_es: Optional[str] = None
+    content_de: Optional[str] = None
+
+class ChapterResponse(ChapterBase):
+    id_chapter: int
+    id_book: int
+    created_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+class PracticeContent(BaseModel):
+    id_chapter: int
+    title: str
+    content: str
+    chapter_number: int
+    book_title: str
+    language: str
+
