@@ -1,11 +1,11 @@
 from typing import Optional, Dict, Any, List
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from app.schemas.user import (
     UserUpdate, UserResponse, UserProfileResponse, UserPublicResponse, UserPublicProfileResponse, UserStats
 )
 from app.controller.usercontroller import UserRepository
 from app.api.auth.segurity import verify_password, hash_password
-
+from app.core.cloudinary import upload_image, delete_imagen
 class UserService:
     def __init__(self, repository: UserRepository):
         self.repository = repository
@@ -138,3 +138,70 @@ class UserService:
     def verify_email(self, user_id: int) -> bool:
         user = self.repository.activate_user(user_id)
         return user is not None
+
+    async def upload_avatar(self, user_id: int, file: UploadFile)->dict:
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El archivo debe de ser una imagen"
+            )
+        file_size =0
+        contents = await file.read()
+        file_size = len(contents)
+
+        await file.seek(0)
+
+        if file_size > 5 * 1024 *1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La imagen no puede exceder 5mb"
+            )
+
+        allowed_formats = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        if file.content_type not in allowed_formats:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Formato no permitido. Usa: {', '.join(allowed_formats)}"
+            )
+        try:
+            upload_result = upload_image(file, folder="scroptorium/avatars")
+        except Exception as e:
+            raise HTTPException(
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen"
+            )
+
+        user, old_public_id = self.repository.update_avatar(
+            user_id,
+            upload_result["url"],
+            upload_result["public_id"]
+        )
+        if not user:
+            delete_imagen(upload_result["public_id"])
+            raise HTTPException(
+                status_code = status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+
+        if old_public_id:
+            delete_imagen(old_public_id)
+        return{
+            "url": upload_result["url"],
+            "public_id": upload_result["public_id"],
+            "message": "Avatar actualizado exitosamente"
+        }
+
+    async def remove_avatar(self, user_id: int)->dict:
+        user, old_public_id=self.repository.remove_avatar(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuario no encontrado"
+            )
+
+            if old_public_id:
+                delete_image(old_public_id)
+
+            return{
+                "message": "Avatar eliminado exitosamente"
+            }
