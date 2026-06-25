@@ -72,4 +72,11 @@ class UserProfileResponse(UserResponse):
 
 class UserPublicProfileResponse(UserPublicResponse):
     stats: Optional[UserStats]=None
-    
+
+class AvatarUploadResponse(BaseModel):
+    url:str
+    public_id:str
+    message: str = "Avatar actualizado exitosamente"
+
+class AvatarDeleteResponse(BaseModel):
+    message: str = "Avatar eliminado exitosamente"
