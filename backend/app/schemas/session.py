@@ -1,39 +1,57 @@
-from typing import Optional, Dict, List, Any
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, desc
-from datetime import datetime, timedelta
-from app.database.models import TypingSession, User
+from pydantic import BaseModel, Field, validator
+from typing import Optional, List
+from datetime import date, datetime
+import re
 
-class SessionRepository:
-    def __init__(self, db: Session):
-        self.db = db
+class SessionBase(BaseModel):
+    id_chapter: int = Field(..., description="ID del capítulo practicado")
+    mode: Optional[str] = Field("classic", description="Modo de práctica")
+    wpm: float = Field(..., gt=0, description="Palabras por minuto")
+    accuracy: float = Field(..., ge=0, le=100, description="Precisión (0-100)")
+    total_keystrokes: int = Field(..., gt=0, description="Total de tecleos")
+    error_count: int = Field(..., ge=0, description="Número de errores")
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
-    def created_session(self, typing_id: int, data: Dict[str, Any])->Session:
-        session = TypingSession(id_typing = typing_id, **data)
-        self.db.add(session)
-        self.db.commit()
-        self.db.refresh(session)
-    def get_user_session(self, user_id: int, skip: int=0, limit: int=300):
-        return self.db.query(TypingSession).filter(TypingSession.id_user == user_id).order_by(desc(TypingSession.started_at)).offset(skip).limit(limit).all()
+    @validator('accuracy')
+    def validate_accuracy(cls, v):
+        if v < 0 or v > 100:
+            raise ValueError('Accuracy debe estar entre 0 y 100')
+        return v
     
-    def get_user_stats(self, user_id: int):
-        sessions = self.db.query(TypingSession).filter(
-            TypingSession.id_user == user_id,
-            TypingSession.completed_at.isnot(None)
-        )
-        total_sessions= sessions.count()
-        avg_wpm = sessions.with_entities(func.avg(TypingSession.wpm)).scalar()
-        avg_accuracy = sessions.with_entities(func.avg(TypingSession.accuracy)).scalar()
-        total_errors= sessions.with_entities(func.sum(TypingSession.error_count)).scalar()
-        best_wpm=sessions.with_entities(func.max(TypingSession.wpm)).scalar()
+    @validator('mode')
+    def validate_mode(cls, v):
+        allowed_modes = ['classic', 'timed', 'custom', 'speed']
+        if v and v.lower() not in allowed_modes:
+            raise ValueError(f'Mode debe ser uno de: {", ".join(allowed_modes)}')
+        return v
+class SessionResponse(BaseModel):
+    id_typing: int
+    id_user: int
+    id_chapter: int
+    mode: str
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    wpm: float
+    accuracy: float
+    total_keystrokes: int
+    error_count: int
+    
+    class Config:
+        from_attributes = True
 
-    def get_session_by_id(self, session_id: int)->Optional[TypingSession]:
-        return self.db.query(TypingSession).filter(TypingSession.id_typing == session_id).first()
-    def delete_session(self, session_id: int)-> bool:
-        session=self.get_session_by_id()
-        if session:
-            self.db.delete(session)
-            self.db.commit()
-            return True
-        return False
+class SessionStats(BaseModel):
+    total_sessions: int = Field(ge=0)
+    avg_wpm: float = Field(ge=0, le=400)
+    avg_accuracy: float = Field(ge= 0, le=100)
+    total_errors: int = Field(ge=0)
+    best_wpm: float = Field(ge=0, le=400)
+    total_time: int = Field(ge=0, description="Tiempo total en minutos")
+
+class SessionFilter(BaseModel):
+    start_date: date | None = None
+    end_date: date | None =None
+    mode: Optional[str] | None = None
+
+    
     
