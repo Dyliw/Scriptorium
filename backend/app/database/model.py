@@ -11,6 +11,7 @@ class User(Base):
     name = Column(String(30), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
+    avatar_public_id = Column(String(255), nullable=True)
 
     # Perfil
     profile_photo = Column(Text, nullable=True)
@@ -35,6 +36,14 @@ class User(Base):
     typing_sessions = relationship("TypingSession", back_populates="user")
     saved_words = relationship("SavedWords", back_populates="user")
     
+    settings_notifications = Column(Boolean, default=True)
+    settings_public_profile = Column(Boolean, default=True)
+    settings_show_stats = Column(Boolean, default=True)
+    settings_language = Column(String(10), default='es')
+    settings_theme = Column(String(20), default='light')
+    settings_typing_sound = Column(Boolean, default=True)
+
+
     def to_dict(self):
         return {
             "id_user": self.id_user,
@@ -155,3 +164,4 @@ class RateLimit(Base):
     attempts = Column(Integer, default=1)
     first_attempt = Column(TIMESTAMP, server_default=func.current_timestamp())
     last_attempt = Column(TIMESTAMP, server_default=func.current_timestamp())
+
