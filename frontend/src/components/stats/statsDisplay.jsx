@@ -1,120 +1,120 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import './StatsDisplay.css';
 
-const StatsDisplay = ({ 
-    stats, 
-    timer, 
-    layout = 'grid',
-    showDetails = true,
-    className = ''
-}) => {
-
+const StatsDisplay = ({ stats, className = '' }) => {
     if (!stats) {
-        return <div className="stats-error">⚠️ No hay estadísticas disponibles</div>;
+        return (
+            <div className={`stats-display ${className}`}>
+                <div className="stat-card">
+                    <span className="stat-label">📊 WPM</span>
+                    <span className="stat-value">--</span>
+                </div>
+                <div className="stat-card">
+                    <span className="stat-label">🎯 Precisión</span>
+                    <span className="stat-value">--%</span>
+                </div>
+                <div className="stat-card">
+                    <span className="stat-label">❌ Errores</span>
+                    <span className="stat-value">--</span>
+                </div>
+                <div className="stat-card">
+                    <span className="stat-label">⌨️ Teclas</span>
+                    <span className="stat-value">--</span>
+                </div>
+            </div>
+        );
     }
 
     const {
         wpm = 0,
-        rawWpm = 0,
-        netWpm = 0,
         accuracy = 100,
         errorCount = 0,
         totalKeystrokes = 0,
-        totalChars = 0,
+        rawWpm = 0,
+        netWpm = 0,
         getCorrectKeystrokes = () => 0,
-        getProgress = () => 0,
-        getElapsedTimeFormatted = () => '00:00',
+        getDetailedStats = () => ({}),
         isComplete = false
     } = stats;
 
-    const {
-        time: timerTime = 0,
-        isRunning: timerIsRunning = false,
-        formatTime: formatTimer = () => '00:00:00'
-    } = timer || {};
-
+    const detailedStats = getDetailedStats ? getDetailedStats() : {};
     const correctKeystrokes = getCorrectKeystrokes ? getCorrectKeystrokes() : 0;
-    const progress = getProgress ? getProgress() : 0;
-    const timeFormatted = getElapsedTimeFormatted ? getElapsedTimeFormatted() : '00:00';
-    const timerFormatted = formatTimer ? formatTimer() : '00:00:00';
-
-
-    const renderStatCard = (icon, label, value, subValue, color = 'blue') => {
-        return (
-            <div className={`stat-card stat-card-${color}`}>
-                <div className="stat-icon">{icon}</div>
-                <div className="stat-content">
-                    <div className="stat-label">{label}</div>
-                    <div className="stat-value">{value}</div>
-                    {subValue && <div className="stat-sub">{subValue}</div>}
-                </div>
-            </div>
-        );
-    };
 
     return (
-        <div className={`stats-display stats-layout-${layout} ${className}`}>
-            {renderStatCard(
-                '⌨️',
-                'WPM',
-                wpm,
-                showDetails ? `Bruto: ${rawWpm} | Neto: ${netWpm}` : null,
-                'primary'
-            )}
-
-            {renderStatCard(
-                '🎯',
-                'Precisión',
-                `${accuracy.toFixed(1)}%`,
-                showDetails ? `${correctKeystrokes}/${totalKeystrokes} correctas` : null,
-                accuracy >= 90 ? 'success' : accuracy >= 70 ? 'warning' : 'danger'
-            )}
-
-            {renderStatCard(
-                '❌',
-                'Errores',
-                errorCount,
-                showDetails ? `${totalKeystrokes} teclas totales` : null,
-                errorCount === 0 ? 'success' : errorCount < 10 ? 'warning' : 'danger'
-            )}
-
-            {timer && (
-                renderStatCard(
-                    '⏱️',
-                    'Tiempo Timer',
-                    timerFormatted,
-                    timerIsRunning ? '▶️ Corriendo' : '⏸️ Pausado',
-                    timerIsRunning ? 'info' : 'secondary'
-                )
-            )}
-
-            {renderStatCard(
-                '⏰',
-                'Tiempo Tipeo',
-                timeFormatted,
-                showDetails ? `Progreso: ${progress.toFixed(1)}%` : null,
-                'info'
-            )}
-
-            {showDetails && (
-                <div className="stat-card stat-card-progress">
-                    <div className="stat-content full-width">
-                        <div className="stat-label">Progreso</div>
-                        <div className="progress-bar-container">
-                            <div 
-                                className="progress-bar" 
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
-                        <div className="stat-sub">
-                            {isComplete ? '✅ Completado!' : `${progress.toFixed(0)}%`}
-                        </div>
-                    </div>
+        <div className={`stats-display ${className}`}>
+            <div className="stat-card stat-card-wpm">
+                <div className="stat-header">
+                    <span className="stat-icon">⚡</span>
+                    <span className="stat-label">WPM</span>
                 </div>
-            )}
+                <div className="stat-value">{Math.round(wpm)}</div>
+                <div className="stat-sub">
+                    <span>Bruto: {rawWpm}</span>
+                    <span>Neto: {netWpm}</span>
+                </div>
+                {isComplete && (
+                    <div className="stat-badge complete">✅ Completado</div>
+                )}
+            </div>
+
+            <div className="stat-card stat-card-accuracy">
+                <div className="stat-header">
+                    <span className="stat-icon">🎯</span>
+                    <span className="stat-label">Precisión</span>
+                </div>
+                <div className="stat-value">{accuracy.toFixed(1)}%</div>
+                <div className="stat-progress">
+                    <div 
+                        className="stat-progress-bar" 
+                        style={{ width: `${accuracy}%` }}
+                    />
+                </div>
+                <div className="stat-sub">
+                    <span>✅ {correctKeystrokes}</span>
+                    <span>❌ {errorCount}</span>
+                </div>
+            </div>
+
+            <div className="stat-card stat-card-errors">
+                <div className="stat-header">
+                    <span className="stat-icon">❌</span>
+                    <span className="stat-label">Errores</span>
+                </div>
+                <div className="stat-value">{errorCount}</div>
+                <div className="stat-sub">
+                    <span>Total teclas: {totalKeystrokes}</span>
+                    <span>Tasa: {totalKeystrokes > 0 ? ((errorCount / totalKeystrokes) * 100).toFixed(1) : 0}%</span>
+                </div>
+            </div>
+            <div className="stat-card stat-card-keystrokes">
+                <div className="stat-header">
+                    <span className="stat-icon">⌨️</span>
+                    <span className="stat-label">Teclas</span>
+                </div>
+                <div className="stat-value">{totalKeystrokes}</div>
+                <div className="stat-sub">
+                    <span>Correctas: {correctKeystrokes}</span>
+                    <span>KPM: {detailedStats.keystrokesPerMinute || 0}</span>
+                </div>
+            </div>
         </div>
     );
 };
 
+StatsDisplay.propTypes = {
+    stats: PropTypes.shape({
+        wpm: PropTypes.number,
+        accuracy: PropTypes.number,
+        errorCount: PropTypes.number,
+        totalKeystrokes: PropTypes.number,
+        rawWpm: PropTypes.number,
+        netWpm: PropTypes.number,
+        getCorrectKeystrokes: PropTypes.func,
+        getDetailedStats: PropTypes.func,
+        isComplete: PropTypes.bool
+    }),
+    className: PropTypes.string
+};
 
 export default StatsDisplay;
