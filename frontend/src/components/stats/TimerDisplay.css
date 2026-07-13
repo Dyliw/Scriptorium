@@ -1,1 +1,151 @@
+.timer-display {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 200px;
+    text-align: center;
+}
 
+.timer-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.timer-icon {
+    font-size: 1.5rem;
+}
+
+.timer-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.timer-value {
+    font-size: 3rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    padding: 0.5rem 0;
+    transition: color 0.3s;
+}
+
+.timer-value.running {
+    color: #28a745;
+    animation: pulse 1s infinite;
+}
+
+.timer-value.paused {
+    color: #6c757d;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.timer-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 0.75rem;
+}
+
+.timer-btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.timer-btn:hover {
+    transform: scale(1.05);
+}
+
+.timer-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.timer-btn.start {
+    background: #28a745;
+    color: white;
+}
+
+.timer-btn.start:hover:not(:disabled) {
+    background: #218838;
+}
+
+.timer-btn.pause {
+    background: #ffc107;
+    color: #212529;
+}
+
+.timer-btn.pause:hover {
+    background: #e0a800;
+}
+
+.timer-btn.reset {
+    background: #6c757d;
+    color: white;
+}
+
+.timer-btn.reset:hover {
+    background: #5a6268;
+}
+
+.timer-btn.duration {
+    background: #17a2b8;
+    color: white;
+}
+
+.timer-btn.duration:hover {
+    background: #138496;
+}
+
+.timer-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.active {
+    background: #28a745;
+    animation: blink 1s infinite;
+}
+
+.status-dot.inactive {
+    background: #dc3545;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+@media (max-width: 768px) {
+    .timer-value {
+        font-size: 2.5rem;
+    }
+    
+    .timer-controls {
+        flex-wrap: wrap;
+    }
+}
