@@ -24,7 +24,6 @@
   border-bottom: 1px solid var(--border-color);
   z-index: 1000;
   transition: background 0.3s, border-color 0.3s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .toggle-sidebar-btn {
