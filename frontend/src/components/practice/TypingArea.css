@@ -1,11 +1,191 @@
+
 .typing-area {
     position: relative;
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
     padding: 2rem;
-    background: #1e1e2e;
+    background: var(--typing);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     min-height: 300px;
+}
+.hidden-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    z-index: -1;
+}
+
+.text-display {
+    font-family: 'Courier New', monospace;
+    font-size: 1.4rem;
+    line-height: 2.2rem;
+    letter-spacing: 0.05rem;
+    color: #a6accd;
+    padding: 1.5rem;
+    background: var(--typing);
+    border-radius: 8px;
+    min-height: 200px;
+    cursor: text;
+    user-select: none;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.char-pending {
+    color: var(--text);
+    transition: color 0.1s ease;
+}
+
+.char-correct {
+    color: #50fa7b;
+}
+
+.char-incorrect {
+    color: #ff5555;
+    background: rgba(255, 85, 85, 0.15);
+    border-radius: 2px;
+    text-decoration: underline wavy #ff5555;
+}
+
+.char-current {
+    color: #b9139b;
+    background: rgba(80, 250, 123, 0.15);
+    border-left: 2px solid #50fa7b;
+    animation: blink-cursor 1s step-end infinite;
+    padding: 0 1px;
+}
+
+/* Animación del cursor */
+@keyframes blink-cursor {
+    0%, 100% { border-left-color: #50fa7b; }
+    50% { border-left-color: transparent; }
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #2a2a3e;
+    border-radius: 2px;
+    margin-top: 1.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF5D73, #FFC857, #45D6A8);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.typing-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
+    background: var(--stats);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.stat-label {
+    color: #6a6f8d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    font-size: 0.75rem;
+}
+
+.stat-value {
+    color: #f8f8f2;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+}
+
+.stat-value.has-errors {
+    color: #ff5555;
+}
+
+.completion-message {
+    text-align: center;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, rgba(80, 250, 123, 0.1), rgba(139, 233, 253, 0.1));
+    border-radius: 8px;
+    border: 1px solid rgba(80, 250, 123, 0.2);
+}
+
+.completion-message h3 {
+    color: #50fa7b;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.completion-message p {
+    color: #a6accd;
+    font-size: 1rem;
+    margin: 0.3rem 0;
+}
+
+.reset-button {
+    margin-top: 1rem;
+    padding: 0.6rem 2rem;
+    background: #50fa7b;
+    color: #1e1e2e;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reset-button:hover {
+    background: #69ff94;
+    transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+    .typing-area {
+        padding: 1rem;
+        min-height: 200px;
+    }
+
+    .text-display {
+        font-size: 1rem;
+        line-height: 1.8rem;
+        padding: 1rem;
+        min-height: 150px;
+    }
+
+    .typing-stats {
+        gap: 0.8rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .stat-item {
+        font-size: 0.8rem;
+    }
+}
+
+.typing-empty {
+    padding: 3rem;
+    text-align: center;
+    color: #6a6f8d;
+    font-size: 1.2rem;
+    background: #1e1e2e;
+    border-radius: 12px;
 }
