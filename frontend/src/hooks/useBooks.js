@@ -1,117 +1,184 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { booksAPI } from '../api/books';
 
-export const useBooks = () => {
+export const useBookContent = (initialBookId = null) => {
   const [books, setBooks] = useState([]);
+  const [chapters, setChapters] = useState([]);
+  const [currentBook, setCurrentBook] = useState(null);
+  const [currentChapter, setCurrentChapter] = useState(null);
+  const [practiceContent, setPracticeContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [language, setLanguage] = useState('es');
 
-  const fetchBooks = async (params = {}) => {
+  const loadBooks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const books = await booksAPI.list({ limit: 100 });
+      console.log('Books loaded:', books); 
+      setBooks(books);
+      return books;
+    } catch (err) {
+      setError(err.message || 'Error al cargar libros');
+      console.error('Error loading books:', err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadChapters = useCallback(async (bookId) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await booksAPI.list(params);
-      setBooks(data);
-      return data;
+      const chapters = await booksAPI.listChapters(bookId);
+      setChapters(chapters);
+      return chapters;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      setError(err.message || 'Error al cargar capítulos');
+      console.error('Error loading chapters:', err);
+      return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createBook = async (bookData) => {
+  const loadPracticeContent = useCallback(async (chapterId, lang = language) => {
     setLoading(true);
+    setError(null);
     try {
-      const newBook = await booksAPI.create(bookData);
-      setBooks(prev => [...prev, newBook]);
-      return newBook;
+      const practice = await booksAPI.getPracticeContent(chapterId, lang);
+      const content = practice?.content || '';
+      setPracticeContent(content);
+      return content;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      setError(err.message || 'Error al cargar contenido');
+      console.error('Error loading practice content:', err);
+      return '';
     } finally {
       setLoading(false);
     }
-  };
+  }, [language]);
 
-  const updateBook = async (bookId, bookData) => {
-    setLoading(true);
-    try {
-      const updated = await booksAPI.update(bookId, bookData);
-      setBooks(prev => prev.map(b => b.id_book === bookId ? updated : b));
-      return updated;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+  const selectBook = useCallback(async (bookId) => {
+    if (!bookId) {
+      console.warn('selectBook called with null/undefined bookId');
+      return null;
     }
-  };
 
-  const deleteBook = async (bookId) => {
-    setLoading(true);
     try {
-      await booksAPI.delete(bookId);
-      setBooks(prev => prev.filter(b => b.id_book !== bookId));
+      const book = books.find(b => b.id_book === bookId);
+      if (!book) {
+        console.warn(`Book with id ${bookId} not found`);
+        setCurrentBook(null);
+        return null;
+      }
+      
+      setCurrentBook(book);
+      await loadChapters(bookId);
+      return book;
     } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+      console.error('Error selecting book:', err);
+      setError(err.message || 'Error al seleccionar libro');
+      return null;
     }
-  };
+  }, [books, loadChapters]);
+
+  const selectChapter = useCallback(async (chapterId) => {
+    if (!chapterId) {
+      console.warn('selectChapter called with null/undefined chapterId');
+      return { chapter: null, content: '' };
+    }
+
+    try {
+      const chapter = chapters.find(c => c.id_chapter === chapterId);
+      if (!chapter) {
+        console.warn(`Chapter with id ${chapterId} not found`);
+        setCurrentChapter(null);
+        return { chapter: null, content: '' };
+      }
+      
+      setCurrentChapter(chapter);
+      const content = await loadPracticeContent(chapterId);
+      
+      return {
+        chapter: chapter,
+        content: content || ''
+      };
+    } catch (err) {
+      console.error('Error selecting chapter:', err);
+      setError(err.message || 'Error al seleccionar capítulo');
+      return {
+        chapter: null,
+        content: ''
+      };
+    }
+  }, [chapters, loadPracticeContent]);
+
+  const changeLanguage = useCallback(async (lang) => {
+    if (!lang) return;
+    
+    setLanguage(lang);
+    if (currentChapter?.id_chapter) {
+      await loadPracticeContent(currentChapter.id_chapter, lang);
+    }
+  }, [currentChapter, loadPracticeContent]);
+
+  // Inicializar: cargar libros al montar
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks]);
+
+  // Si se proporciona initialBookId, seleccionar ese libro
+  useEffect(() => {
+    if (initialBookId && books.length > 0) {
+      selectBook(initialBookId);
+    }
+  }, [initialBookId, books, selectBook]);
+
+  // Limpiar error después de 5 segundos
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   return {
+    // Estado
     books,
-    loading,
-    error,
-    fetchBooks,
-    createBook,
-    updateBook,
-    deleteBook
-  };
-};
-
-// Hook para capítulos
-export const useChapters = (bookId) => {
-  const [chapters, setChapters] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchChapters = async (params = {}) => {
-    setLoading(true);
-    try {
-      const data = await booksAPI.listChapters(bookId, params);
-      setChapters(data);
-      return data;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createChapter = async (chapterData) => {
-    setLoading(true);
-    try {
-      const newChapter = await booksAPI.createChapter(bookId, chapterData);
-      setChapters(prev => [...prev, newChapter]);
-      return newChapter;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
     chapters,
+    currentBook,
+    currentChapter,
+    practiceContent,
     loading,
     error,
-    fetchChapters,
-    createChapter
+    language,
+
+    // Acciones
+    loadBooks,
+    loadChapters,
+    loadPracticeContent,
+    selectBook,
+    selectChapter,
+    changeLanguage,
+
+    getBookById: (id) => books.find(b => b.id_book === id),
+    getChapterById: (id) => chapters.find(c => c.id_chapter === id),
+    
+    // Reset 
+    reset: () => {
+      setBooks([]);
+      setChapters([]);
+      setCurrentBook(null);
+      setCurrentChapter(null);
+      setPracticeContent('');
+      setError(null);
+      setLanguage('es');
+    }
   };
 };
