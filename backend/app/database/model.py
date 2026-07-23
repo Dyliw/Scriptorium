@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, DateTime, ForeignKey, DECIMAL
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, DateTime, ForeignKey, DECIMAL, CheckConstraint, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database.db import Base
@@ -98,7 +98,7 @@ class Books(Base):
     description_en = Column(Text, nullable=True)
     description_es = Column(Text, nullable=True)
     description_de = Column(Text, nullable=True)
-    
+    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     # Relación con capítulos
     chapters = relationship("Chapters", back_populates="book", cascade="all, delete-orphan")
 
@@ -115,18 +115,18 @@ class Chapters(Base):
     content_en = Column(Text, nullable=True)
     content_es = Column(Text, nullable=True)
     content_de = Column(Text, nullable=True)
+    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     
     # Relaciones
     book = relationship("Books", back_populates="chapters")
     typing_sessions = relationship("TypingSession", back_populates="chapter")
 
-
 class TypingSession(Base):
-    __tablename__ = "typing_session"
+    __tablename__ = "typing_sessions"
     
     id_typing = Column(Integer, primary_key=True, autoincrement=True)
-    id_user = Column(Integer, ForeignKey("users.id_user", ondelete="CASCADE"))
-    id_chapter = Column(Integer, ForeignKey("chapters.id_chapter", ondelete="CASCADE"))
+    id_user = Column(Integer, ForeignKey("users.id_user", ondelete="CASCADE"), nullable=False)
+    id_chapter = Column(Integer, ForeignKey("chapters.id_chapter", ondelete="CASCADE"), nullable=False)
     mode = Column(String(30), default="Classic", nullable=False)
     started_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     completed_at = Column(TIMESTAMP, nullable=True)
@@ -134,11 +134,14 @@ class TypingSession(Base):
     accuracy = Column(DECIMAL(5,2), nullable=True)
     total_keystrokes = Column(Integer, nullable=True)
     error_count = Column(Integer, nullable=True)
+    duration_seconds = Column(Integer, nullable=True)
+    character_count = Column(Integer, nullable=True)
+    language = Column(String(10), default='es')
+    created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     
     # Relaciones
     user = relationship("User", back_populates="typing_sessions")
     chapter = relationship("Chapters", back_populates="typing_sessions")
-
 
 class SavedWords(Base):
     __tablename__ = "saved_words"
@@ -165,3 +168,50 @@ class RateLimit(Base):
     first_attempt = Column(TIMESTAMP, server_default=func.current_timestamp())
     last_attempt = Column(TIMESTAMP, server_default=func.current_timestamp())
 
+class UserBooks(Base):
+    __tablename__ = "user_books"
+    
+    id_user_book = Column(Integer, primary_key=True, autoincrement=True)
+    id_user = Column(Integer, ForeignKey("users.id_user", ondelete="CASCADE"))
+    id_book = Column(Integer, ForeignKey("books.id_book", ondelete="CASCADE"))
+    
+    is_favorite = Column(Boolean, default=False)
+    is_completed = Column(Boolean, default=False)
+    progress_percentage = Column(DECIMAL(5,2), default=0)
+    last_chapter_id = Column(Integer, ForeignKey("chapters.id_chapter", ondelete="SET NULL"), nullable=True)
+    last_character_index = Column(Integer, default=0)
+    
+    added_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+    last_practiced = Column(TIMESTAMP, nullable=True)
+    completed_at = Column(TIMESTAMP, nullable=True)
+    
+    personal_note = Column(Text, nullable=True)
+    user_rating = Column(Integer, CheckConstraint('user_rating BETWEEN 1 AND 5'), nullable=True)
+    
+    user = relationship("User", back_populates="user_books")
+    book = relationship("Books", back_populates="user_books")
+    last_chapter = relationship("Chapters")
+    stats = relationship("UserBookStats", back_populates="user_book", cascade="all, delete-orphan")
+    
+    __table_args__ = (
+        UniqueConstraint('id_user', 'id_book', name='uq_user_book'),
+    )
+
+class UserBookStats(Base):
+    __tablename__ = "user_book_stats"
+    
+    id_stat = Column(Integer, primary_key=True, autoincrement=True)
+    id_user_book = Column(Integer, ForeignKey("user_books.id_user_book", ondelete="CASCADE"))
+    
+    total_practice_time = Column(Integer, default=0)
+    sessions_count = Column(Integer, default=0)
+    avg_wpm = Column(DECIMAL(5,2), nullable=True)
+    avg_accuracy = Column(DECIMAL(5,2), nullable=True)
+    best_wpm = Column(DECIMAL(5,2), nullable=True)
+    total_characters_typed = Column(Integer, default=0)
+    total_errors = Column(Integer, default=0)
+    words_learned = Column(Integer, default=0)
+    
+    updated_at = Column(TIMESTAMP, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
+    
+    user_book = relationship("UserBooks", back_populates="stats")
