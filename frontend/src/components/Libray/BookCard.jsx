@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, User, Clock, Star } from 'lucide-react';
+import './BookCard.css';
 
 const BookCard = ({ book, language = 'es' }) => {
   const getTitle = () => {
@@ -13,9 +14,9 @@ const BookCard = ({ book, language = 'es' }) => {
   };
 
   const difficultyColors = {
-    beginner: 'bg-green-100 text-green-800',
-    intermediate: 'bg-yellow-100 text-yellow-800',
-    advanced: 'bg-red-100 text-red-800'
+    beginner: 'beginner',
+    intermediate: 'intermediate',
+    advanced: 'advanced'
   };
 
   const difficultyLabels = {
@@ -25,39 +26,36 @@ const BookCard = ({ book, language = 'es' }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-      <Link to={`/library/book/${book.id_book}`}>
-        <div className="p-6">
+    <div className="book-card">
+      <Link to={`/library/book/${book.id_book}`} className="book-card-link">
+        <div className="book-card-content">
           {/* Encabezado */}
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-semibold text-gray-900 line-clamp-2 flex-1">
+          <div className="book-card-header">
+            <h3 className="book-card-title">
               {getTitle()}
             </h3>
-            <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${difficultyColors[book.difficulty] || 'bg-gray-100 text-gray-800'}`}>
+            <span className={`difficulty-badge ${difficultyColors[book.difficulty] || ''}`}>
               {difficultyLabels[book.difficulty] || book.difficulty}
             </span>
           </div>
 
-          {/* Autor */}
-          <div className="flex items-center text-gray-600 mb-2">
-            <User className="w-4 h-4 mr-2" />
-            <span className="text-sm">{book.author || 'Autor desconocido'}</span>
+          <div className="book-card-author">
+            <User className="card-author-icon" />
+            <span className="card-author-name">{book.author || 'Autor desconocido'}</span>
           </div>
 
-          {/* Descripción */}
-          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+          <p className="book-card-description">
             {getDescription()}
           </p>
 
-          {/* Estadísticas rápidas */}
-          <div className="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
-            <div className="flex items-center">
-              <BookOpen className="w-4 h-4 mr-1" />
+          <div className="book-card-stats">
+            <div className="stat-item">
+              <BookOpen className="stat-icon" />
               <span>{book.chapters_count || 0} capítulos</span>
             </div>
             {book.avg_rating && (
-              <div className="flex items-center">
-                <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
+              <div className="stat-item">
+                <Star className="stat-icon rating-star" />
                 <span>{book.avg_rating.toFixed(1)}</span>
               </div>
             )}
