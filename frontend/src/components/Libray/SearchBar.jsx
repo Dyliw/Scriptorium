@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, X, Filter } from 'lucide-react';
+import './SearchBar.css';
 
 const SearchBar = ({ onSearch, onFilterChange, initialSearch = '', initialLanguage = 'es' }) => {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -28,41 +29,41 @@ const SearchBar = ({ onSearch, onFilterChange, initialSearch = '', initialLangua
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto mb-8">
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="flex items-center bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="flex-1 relative">
+    <div className="searchbar-wrapper">
+      <form onSubmit={handleSubmit} className="searchbar-form">
+        <div className="searchbar-container">
+          <div className="searchbar-input-wrapper">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por título o autor..."
-              className="w-full px-4 py-3 pl-12 outline-none text-gray-700"
+              className="searchbar-input"
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="searchbar-icon" />
           </div>
           
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="px-4 py-3 text-gray-500 hover:text-gray-700 border-l"
+            className="searchbar-filter-btn"
           >
-            <Filter className="w-5 h-5" />
+            <Filter className="filter-icon" />
           </button>
           
           {searchTerm && (
             <button
               type="button"
               onClick={handleClear}
-              className="px-4 py-3 text-gray-400 hover:text-gray-600 border-l"
+              className="searchbar-clear-btn"
             >
-              <X className="w-5 h-5" />
+              <X className="clear-icon" />
             </button>
           )}
           
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 font-medium"
+            className="searchbar-submit-btn"
           >
             Buscar
           </button>
@@ -70,23 +71,19 @@ const SearchBar = ({ onSearch, onFilterChange, initialSearch = '', initialLangua
 
         {/* Filtros desplegables */}
         {showFilters && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg p-4 z-10 border">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="searchbar-filters">
+            <div className="filters-grid">
+              <div className="filter-group">
+                <label className="filter-label">
                   Idioma
                 </label>
-                <div className="flex gap-2">
+                <div className="filter-options">
                   {['es', 'en', 'de'].map((lang) => (
                     <button
                       key={lang}
                       type="button"
                       onClick={() => handleLanguageChange(lang)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        language === lang
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                      className={`filter-option ${language === lang ? 'active' : ''}`}
                     >
                       {lang === 'es' ? 'Español' : lang === 'en' ? 'English' : 'Deutsch'}
                     </button>
@@ -94,19 +91,15 @@ const SearchBar = ({ onSearch, onFilterChange, initialSearch = '', initialLangua
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="filter-group">
+                <label className="filter-label">
                   Dificultad
                 </label>
-                <div className="flex gap-2 flex-wrap">
+                <div className="filter-options">
                   <button
                     type="button"
                     onClick={() => handleDifficultyChange('')}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      difficulty === ''
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`filter-option ${difficulty === '' ? 'active' : ''}`}
                   >
                     Todos
                   </button>
@@ -115,11 +108,7 @@ const SearchBar = ({ onSearch, onFilterChange, initialSearch = '', initialLangua
                       key={diff}
                       type="button"
                       onClick={() => handleDifficultyChange(diff)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        difficulty === diff
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                      className={`filter-option ${difficulty === diff ? 'active' : ''}`}
                     >
                       {diff === 'beginner' ? 'Principiante' : 
                        diff === 'intermediate' ? 'Intermedio' : 'Avanzado'}
