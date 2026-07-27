@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, BookOpen, Clock, Play } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import './ChapterList.css';
 
 const ChapterList = ({ chapters, bookId, language = 'es' }) => {
+  const navigate = useNavigate();
   const [expandedChapters, setExpandedChapters] = useState({});
 
   const toggleChapter = (chapterId) => {
@@ -21,58 +23,63 @@ const ChapterList = ({ chapters, bookId, language = 'es' }) => {
     return content ? content.substring(0, 200) + '...' : 'Contenido no disponible';
   };
 
+  const handlePractice = (chapterId, e) => {
+    e.stopPropagation();
+    navigate(`/practice/${bookId}/${chapterId}`);
+  };
+
   if (!chapters || chapters.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="chapters-empty">
+        <BookOpen className="chapters-empty-icon" />
         <p>Este libro aún no tiene capítulos</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-xl font-semibold mb-4">Capítulos</h3>
-      <div className="space-y-2">
+    <div className="chapters-container">
+      <h3 className="chapters-title">Capítulos</h3>
+      <div className="chapters-list">
         {chapters.map((chapter) => (
           <div
             key={chapter.id_chapter}
-            className="bg-white rounded-lg shadow-md overflow-hidden"
+            className="chapter-item"
           >
             <button
               onClick={() => toggleChapter(chapter.id_chapter)}
-              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="chapter-header"
             >
-              <div className="flex items-center flex-1">
-                <span className="font-medium text-gray-900 mr-3">
+              <div className="chapter-header-left">
+                <span className="chapter-number">
                   Capítulo {chapter.chapter_number || '?'}
                 </span>
-                <span className="text-gray-700">{getTitle(chapter)}</span>
+                <span className="chapter-title-text">{getTitle(chapter)}</span>
               </div>
-              <div className="flex items-center space-x-4">
-                <Link
-                  to={`/practice/${bookId}/${chapter.id_chapter}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center text-blue-600 hover:text-blue-800"
+              <div className="chapter-header-right">
+                <button
+                  onClick={(e) => handlePractice(chapter.id_chapter, e)}
+                  className="practice-button"
                 >
-                  <Play className="w-4 h-4 mr-1" />
-                  <span className="text-sm">Practicar</span>
-                </Link>
+                  <Play className="practice-icon" />
+                  Practicar
+                </button>
                 {expandedChapters[chapter.id_chapter] ? (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="chapter-toggle-icon" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="chapter-toggle-icon" />
                 )}
               </div>
             </button>
 
             {expandedChapters[chapter.id_chapter] && (
-              <div className="px-4 pb-4 border-t">
-                <div className="pt-3">
-                  <p className="text-gray-600 text-sm whitespace-pre-wrap">
+              <div className="chapter-content">
+                <div className="chapter-content-inner">
+                  <p className="chapter-description">
                     {getContent(chapter)}
                   </p>
-                  <div className="mt-3 flex items-center text-sm text-gray-500">
-                    <Clock className="w-4 h-4 mr-1" />
+                  <div className="chapter-meta">
+                    <Clock className="chapter-meta-icon" />
                     <span>{chapter.word_count || 0} palabras</span>
                   </div>
                 </div>
