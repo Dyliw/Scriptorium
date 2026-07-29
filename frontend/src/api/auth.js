@@ -56,14 +56,29 @@ export const authAPI = {
   logout: () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
   },
-
-  // Verificar si está autenticado
   isAuthenticated: () => {
-    const token = localStorage.getItem('access_token');
-    return !!token;
-  },
+  const token = localStorage.getItem('access_token');
+  if (!token) return false;
+  
+  // Opcional: Verificar expiración del token
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+},
+register: async (userData) => {
+  const response = await api.post('/auth/register', userData);
+  return response.data;
+},
+verifyEmail: async (token) => {
+  const response = await api.get('/auth/verify-email', {
+    params: { token }
+  });
+  return response.data;
+},
 
   // Obtener usuario guardado
   getCurrentUser: () => {
