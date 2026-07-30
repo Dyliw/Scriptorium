@@ -61,11 +61,11 @@ class UserInfo(BaseModel):
     created_at: Optional[datetime]
 
 class LoginResponse(BaseModel):
-    acces_token: str
+    access_token: str
     token_type: str = "bearer"
     user: UserInfo
     expires_in: int
 
 class MessageResponse(BaseModel):
     message: str
-    succes: bool = True
+    success: bool = True
