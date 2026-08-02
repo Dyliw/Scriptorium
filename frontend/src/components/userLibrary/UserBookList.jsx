@@ -1,6 +1,7 @@
 import React from 'react';
 import UserBookCard from './UserBookCard';
 import { BookOpen, BookMarked, CheckCircle, Clock } from 'lucide-react';
+import './UserBooksList.css';
 
 const UserBooksList = ({ 
   books, 
@@ -32,8 +33,9 @@ const UserBooksList = ({
   };
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-2 mb-6">
+    <div className="user-books-list">
+      {/* Filtros */}
+      <div className="filter-container">
         {filters.map((f) => (
           <button
             key={f.id}
@@ -41,38 +43,32 @@ const UserBooksList = ({
               const params = getFilterParam(f.id);
               onFilterChange({ ...params, only_favorites: f.id === 'favorites', only_completed: f.id === 'completed', only_in_progress: f.id === 'in_progress' });
             }}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-              filter === f.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-            }`}
+            className={`filter-button ${filter === f.id ? 'active' : ''}`}
           >
-            <f.icon className="w-4 h-4 mr-2" />
-            <span className="text-sm font-medium">{f.label}</span>
-            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
-              filter === f.id
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-600'
-            }`}>
+            <f.icon className="filter-icon" />
+            <span className="filter-label">{f.label}</span>
+            <span className={`filter-count ${filter === f.id ? 'active' : ''}`}>
               {f.count}
             </span>
           </button>
         ))}
       </div>
+
+      {/* Lista de libros */}
       {loading && books.length === 0 ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="loader-container">
+          <div className="loader-spinner"></div>
         </div>
       ) : books.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No hay libros en esta sección</p>
-          <p className="text-gray-400 text-sm mt-2">
+        <div className="empty-state">
+          <BookOpen className="empty-icon" />
+          <p className="empty-title">No hay libros en esta sección</p>
+          <p className="empty-subtitle">
             Explora la biblioteca y agrega libros para comenzar a practicar
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="books-grid">
           {books.map((book) => (
             <UserBookCard
               key={book.id_user_book}
