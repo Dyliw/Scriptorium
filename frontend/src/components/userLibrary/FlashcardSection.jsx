@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, Volume2, Plus, X, Search, Layers} from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  RotateCcw,
+  Volume2,
+  Plus,
+  X,
+  Search,
+  Layers
+} from 'lucide-react';
+import './FlashcardSection.css';
 
 const FlashcardSection = ({ words, onDeleteWord, onSaveWord }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -89,37 +99,33 @@ const FlashcardSection = ({ words, onDeleteWord, onSaveWord }) => {
   const currentWord = filteredWords[currentIndex];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="flex-1 min-w-[200px] relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+    <div className="flashcard-container">
+      {/* Barra de búsqueda y acciones */}
+      <div className="flashcard-toolbar">
+        <div className="search-wrapper">
+          <Search className="search-icon" />
           <input
             type="text"
             placeholder="Buscar palabras..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="search-input"
           />
         </div>
         
-        <button
-          onClick={handleShuffle}
-          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center text-sm"
-        >
-          <RotateCcw className="w-4 h-4 mr-1" />
+        <button onClick={handleShuffle} className="toolbar-button shuffle">
+          <RotateCcw className="button-icon" />
           Mezclar
         </button>
         
-        <button
-          onClick={() => setShowAddWord(true)}
-          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center text-sm"
-        >
-          <Plus className="w-4 h-4 mr-1" />
+        <button onClick={() => setShowAddWord(true)} className="toolbar-button add">
+          <Plus className="button-icon" />
           Agregar
         </button>
       </div>
 
-      <div className="text-sm text-gray-500 mb-3">
+      {/* Contador */}
+      <div className="flashcard-counter">
         {filteredWords.length > 0 ? (
           `${currentIndex + 1} / ${filteredWords.length} palabras`
         ) : (
@@ -127,150 +133,150 @@ const FlashcardSection = ({ words, onDeleteWord, onSaveWord }) => {
         )}
       </div>
 
+      {/* Flashcard */}
       {filteredWords.length > 0 ? (
-        <div className="flex-1 flex flex-col">
-          <div 
-            className="relative w-full aspect-[4/3] perspective-1000 cursor-pointer"
-            onClick={handleFlip}
-          >
-            <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${
-              isFlipped ? 'rotate-y-180' : ''
-            }`}>
-              <div className="absolute w-full h-full backface-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg p-8 flex flex-col items-center justify-center border-2 border-blue-100">
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-gray-800 mb-4">
+        <div className="flashcard-main">
+          <div className="flashcard-wrapper" onClick={handleFlip}>
+            <div className={`flashcard-inner ${isFlipped ? 'flipped' : ''}`}>
+              {/* Frente */}
+              <div className="flashcard-front">
+                <div className="flashcard-content">
+                  <p className="flashcard-word">
                     {currentWord.word}
                   </p>
                   {currentWord.context_sentence && (
-                    <p className="text-gray-600 italic text-sm mt-4 px-4">
+                    <p className="flashcard-context">
                       "{currentWord.context_sentence}"
                     </p>
                   )}
                 </div>
-                <div className="absolute bottom-4 right-4 flex space-x-2">
+                <div className="flashcard-actions">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       speakWord(currentWord.word);
                     }}
-                    className="p-2 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors"
+                    className="speak-button"
                     title="Escuchar pronunciación"
                   >
-                    <Volume2 className="w-4 h-4 text-blue-600" />
+                    <Volume2 className="speak-icon" />
                   </button>
                 </div>
               </div>
-              <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-green-50 to-teal-50 rounded-xl shadow-lg p-8 flex flex-col items-center justify-center border-2 border-green-100">
-                <div className="text-center">
-                  <p className="text-lg text-gray-600 mb-2">Significado</p>
-                  <p className="text-2xl text-gray-800">
+
+              {/* Reverso */}
+              <div className="flashcard-back">
+                <div className="flashcard-content">
+                  <p className="flashcard-meaning-label">Significado</p>
+                  <p className="flashcard-meaning">
                     {currentWord.word}
                   </p>
                   {currentWord.context_sentence && (
-                    <p className="text-gray-600 text-sm mt-4">
+                    <p className="flashcard-context-back">
                       Contexto: {currentWord.context_sentence}
                     </p>
                   )}
                 </div>
-                <p className="absolute bottom-4 text-xs text-gray-400">
+                <p className="flashcard-flip-hint">
                   Haz clic para voltear
                 </p>
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between mt-4">
+
+          {/* Controles de navegación */}
+          <div className="flashcard-navigation">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+              className="nav-button"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="nav-icon" />
             </button>
 
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => handleDeleteWord(currentWord.id_words)}
-                className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm"
-              >
-                <X className="w-4 h-4 inline mr-1" />
-                Eliminar
-              </button>
-            </div>
+            <button
+              onClick={() => handleDeleteWord(currentWord.id_words)}
+              className="delete-button"
+            >
+              <X className="delete-icon" />
+              Eliminar
+            </button>
 
             <button
               onClick={handleNext}
               disabled={currentIndex === filteredWords.length - 1}
-              className="p-2 rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+              className="nav-button"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="nav-icon" />
             </button>
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-          <Layers className="w-16 h-16 mb-4" />
-          <p className="text-lg">No hay palabras guardadas</p>
-          <p className="text-sm">Guarda palabras mientras practicas para verlas aquí</p>
+        <div className="flashcard-empty">
+          <Layers className="empty-icon" />
+          <p className="empty-title">No hay palabras guardadas</p>
+          <p className="empty-subtitle">Guarda palabras mientras practicas para verlas aquí</p>
         </div>
       )}
 
+      {/* Modal para agregar palabra */}
       {showAddWord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Agregar nueva palabra</h3>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">Agregar nueva palabra</h3>
               <button
                 onClick={() => setShowAddWord(false)}
-                className="p-1 hover:bg-gray-100 rounded-full"
+                className="modal-close"
               >
-                <X className="w-5 h-5" />
+                <X className="modal-close-icon" />
               </button>
             </div>
             
             <form onSubmit={handleAddWord}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">
                     Palabra *
                   </label>
                   <input
                     type="text"
                     value={newWord.word}
                     onChange={(e) => setNewWord({ ...newWord, word: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                     required
                     autoFocus
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="form-group">
+                  <label className="form-label">
                     Contexto (opcional)
                   </label>
                   <input
                     type="text"
                     value={newWord.context_sentence}
                     onChange={(e) => setNewWord({ ...newWord, context_sentence: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="form-input"
                     placeholder="Ej: La palabra apareció en este contexto..."
                   />
                 </div>
-                
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddWord(false)}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                  >
-                    Guardar palabra
-                  </button>
-                </div>
+              </div>
+              
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setShowAddWord(false)}
+                  className="modal-cancel"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="modal-submit"
+                >
+                  Guardar palabra
+                </button>
               </div>
             </form>
           </div>
