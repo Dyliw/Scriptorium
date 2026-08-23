@@ -14,7 +14,7 @@ class SessionRepository:
         self.db.commit()
         self.db.refresh(session)
         return session
-    def get_user_session(self, user_id: int, skip: int=0, limit: int=300):
+    def get_user_sessions(self, user_id: int, skip: int=0, limit: int=300):
         return self.db.query(TypingSession).filter(TypingSession.id_user == user_id).order_by(desc(TypingSession.started_at)).offset(skip).limit(limit).all()
     
     def get_user_stats(self, user_id: int):
